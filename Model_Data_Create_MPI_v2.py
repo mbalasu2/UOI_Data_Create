@@ -209,20 +209,20 @@ def Model_Data_Create(mdlW,v1,v2,v3,mdlsz=100,seed=np.random.randint(9999),\
         y-=np.mean(y)
 
 
-    if store:
-        if saveAs=='hdf5':
-            with f:
-                g.create_dataset(name='y',data=np.ravel(y),dtype=np.float64,\
-                                shape=np.ravel(y).shape,compression="gzip")
-                g.create_dataset(name='Wact',data=Wact,dtype=np.float64,\
-                                shape=Wact.shape,compression="gzip")
+        if store:
+            if saveAs=='hdf5':
+                with f:
+                    g.create_dataset(name='y',data=np.ravel(y),dtype=np.float64,\
+                                    shape=np.ravel(y).shape,compression="gzip")
+                    g.create_dataset(name='Wact',data=Wact,dtype=np.float64,\
+                                    shape=Wact.shape,compression="gzip")
 
-        print '\nData Model:'
-        print '\t* No covariates:\t%i'%DDat.shape[0]
-        print '\t* No samples   :\t%i'%DDat.shape[1]
-        print 'Data stored in %s'%path
-    else:
-        return DDat,np.ravel(y),Wact
+            print '\nData Model:'
+            print '\t* No covariates:\t%i'%DDat.shape[0]
+            print '\t* No samples   :\t%i'%DDat.shape[1]
+            print 'Data stored in %s'%path
+        else:
+            return DDat,np.ravel(y),Wact
 
     f.close()
 
