@@ -194,6 +194,10 @@ def Model_Data_Create(mdlW,v1,v2,v3,mdlsz=100,seed=np.random.randint(9999),\
             if rank==0:
                 if colw==1:
                 print "collective write time %f" %(timeend-timestart)
+                print '\nData Model:' 
+                print '\t* No samples:\t%i'%DDat.shape[0]       #changed from covariates
+                print '\t* No covariates   :\t%i'%DDat.shape[1] #changed from samples
+                print 'Data stored in %s'%path
 
 
     if rank==0:
@@ -217,10 +221,6 @@ def Model_Data_Create(mdlW,v1,v2,v3,mdlsz=100,seed=np.random.randint(9999),\
                     g.create_dataset(name='Wact',data=Wact,dtype=np.float64,\
                                     shape=Wact.shape,compression="gzip")
 
-            print '\nData Model:'
-            print '\t* No covariates:\t%i'%DDat.shape[0]
-            print '\t* No samples   :\t%i'%DDat.shape[1]
-            print 'Data stored in %s'%path
         else:
             return DDat,np.ravel(y),Wact
 
