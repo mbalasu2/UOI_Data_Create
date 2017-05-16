@@ -141,8 +141,8 @@ def Model_Data_Create(mdlW,v1,v2,v3,mdlsz=100,seed=np.random.randint(9999),\
         nd = v3*(mdlsz+mdlsz*v2)
 
     comm.Barrier()
-    comm.Bcast (nd, MPI.INT)
-    comm.Bcast (W, MPI.DOUBLE)
+    comm.Bcast(nd, MPI.INT)
+    comm.Bcast(W, MPI.DOUBLE)
 
     '''
     #generate input data
