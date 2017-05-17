@@ -1,0 +1,15 @@
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -n 1
+#SBATCH --job-name=BoLBO_test
+#SBATCH --output=stdout.log
+#SBATCH --error=stderr.log 
+#SBATCH -t 00:30:00
+#SBATCH -p debug
+
+
+module load python/2.7.9
+module load h5py
+
+srun -n 1 -u python Model_Data_Create.py --v1="0.0" --v2="100" --v3="30" --store --saveAs="hdf5" --path="./" 
+
