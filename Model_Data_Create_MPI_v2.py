@@ -132,30 +132,15 @@ def Model_Data_Create(mdlW,v1,v2,v3,mdlsz=100,seed=np.random.randint(9999),\
     elif mdlW=='ID':
         W = 10*np.ones(size=(mdlsz,1))
 
-    #comm.Bcast([W,MPI.DOUBLE])
-
-        #total number of data samples
+    #total number of data samples
     nd = v3*(mdlsz+mdlsz*v2)
 
     '''
     #generate input data
     #-------------------
     '''
-    	#data for non-null dimensions
-   	 #Dat     = 3*np.random.normal(size=(mdlsz,nd//size))
-	    #data for null dimensions
-	    #Dat2    = 3*np.random.normal(size=(1+round(v2*mdlsz),nd//size))
-	    #design matrix // input data // non-null and null dimensions
-	    #DDat    = np.vstack((Dat,Dat2)).T
-
-
-	#print '\n before h5py.File'
     
     colw=1 #default is collective write
-    	#name = '%s_%.1f_%i_%i'%(mdlW,v1,v2,v3)
-    	#f=h5py.File('%s/Model_Data_%s.h5'%(path,name),'w',driver='mpio',comm=MPI.COMM_WORLD)
-
-	#print '\n finished h5py.file'
 		
     length_x= int(nd)
     length_y= int(1+round(v2*mdlsz)+mdlsz)
@@ -169,28 +154,15 @@ def Model_Data_Create(mdlW,v1,v2,v3,mdlsz=100,seed=np.random.randint(9999),\
 
     Dat = 3*np.random.normal(size=(mdlsz, end-start))
 
-    #print Dat.shape
-
     Dat2 = 3*np.random.normal(size=(int(1+round(v2*mdlsz)), end-start))
-
-    #print Dat.shape
 
     DDat = np.vstack((Dat,Dat2)).T
 
-    #if rank==0:
-	#print DDat
-
-    #sys.exit()
-    #print '\n finished DDat cal'
-
     name = '%s_%.1f_%i_%i'%(mdlW,v1,v2,v3)
     f=h5py.File("%s/Model_Data_%s.h5"%(path,name),'w',driver='mpio',comm=MPI.COMM_WORLD)
-    #filename="parallel_test.hdf5"	
-    #f = h5py.File(filename, 'w', driver='mpio', comm=MPI.COMM_WORLD)
-    #print '\n finished h5py.file'
     g = f.create_group('data')
     dset = g.create_dataset('X', shape=(length_x, length_y), dtype=np.float64)
-    #print dset.shape
+    
 
     if store:
         if saveAs=='hdf5':
@@ -203,28 +175,23 @@ def Model_Data_Create(mdlW,v1,v2,v3,mdlsz=100,seed=np.random.randint(9999),\
                 	dset[start:end,:] = DDat
 
             
-   
-    print '\nBefore tmp calculation'
-        #dim(Wact)<-mdlsz+mdlsz*v2+1
+    #dim(Wact)<-mdlsz+mdlsz*v2+1
+
+    '''
+    #generate groud truth
+    #--------------------
+    '''
 
     Wact = np.ones((length_y))
 
     if rank==0:
     	tmp = np.zeros((1+round(v2*mdlsz),1))
     	Wact    = np.vstack((W,tmp))
-
-    #if rank==0:
-	#print 'Wact shape'
-	#print Wact.shape
  
     y = np.dot(W.T,Dat)+v1*np.sum(np.abs(W))*np.random.normal(size=end-start)
     y-=np.mean(y)
-    #print y.shape
-    #sys.exit() 
 
     dset_y = g.create_dataset('y', shape=(length_x,1), dtype=np.float64)
-    #print dset_y.id
-
     dset_W = g.create_dataset('Wact', shape=Wact.shape, dtype=np.float64)
     
     if store:
@@ -233,14 +200,11 @@ def Model_Data_Create(mdlW,v1,v2,v3,mdlsz=100,seed=np.random.randint(9999),\
 			with dset_y.collective:
 				dset_y[start:end,:] = y.T
 		if rank==0:
-			dset_W[:] = Wact
-    
-    print 'Finished Everything'            
+			dset_W[:] = Wact            
 
     f.close()
 
     MPI.Finalize()
-    print 'Finished Finalzing'
 
 if __name__=='__main__':
     main()
