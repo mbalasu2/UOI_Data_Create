@@ -2,15 +2,15 @@
 #SBATCH -N 2
 #SBATCH -n 40
 #SBATCH -C haswell
-#SBATCH --job-name=BoLBO_test
+#SBATCH --job-name=Data_2GB
 #SBATCH --output=stdout.log
 #SBATCH --error=stderr.log 
 #SBATCH -t 00:30:00
 #SBATCH -p debug
 
 
-module load python/2.7.9
-module load h5py
+module load python/2.7-anaconda
+module load h5py-parallel
 
 srun -n 40 -u python Model_Data_Create_MPI_v2.py --v1="0.0" --v2="100" --v3="3" --store --saveAs="hdf5" --path="./" 
 
