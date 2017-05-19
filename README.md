@@ -12,4 +12,4 @@ This folder has 2 files.
   
 About the program:
 --------------------------
-This program creates X matrix of (m,n) and y vector of (m,1) shape. In addition it calculates the ground truth Wact with 100 non-null number and of  shape (n,1).Currently the program creates hdf5 files. Improvement can be done to save in other formats.
+This program creates X matrix of (m,n) and y vector of (m,1) shape. In addition it calculates the ground truth Wact with 100 non-null numbers and of  shape (n,1).Currently the program creates hdf5 files. Improvement can be done to save in other formats.
