@@ -3,13 +3,12 @@ import os,pdb,h5py
 from mpi4py import MPI
 import numpy as np
 from optparse import OptionParser
-import scipy.io as sio
-
-
+import sys
 """
 Author : Mahesh Balasubramanian (Adapted from Alex Bujan (adapted from Kris Bouchard)) 
 Date    : 05/16/2017
 """
+
 
 def main():
     usage = '%prog [options]'
@@ -50,7 +49,7 @@ def Model_Data_Create(mdlW,v1,v2,v3,mdlsz=100,seed=np.random.randint(9999),\
                         store=False,path=os.getcwd(),saveAs='hdf5'):
 
     """
-    Model_Data_Create
+    Modelimport sys_Data_Create
     -----------------
 
     Creates data samples using different underlying coefficient distributions.
@@ -83,150 +82,165 @@ def Model_Data_Create(mdlW,v1,v2,v3,mdlsz=100,seed=np.random.randint(9999),\
     comm = MPI.COMM_WORLD
     size = comm.Get_size()
     rank = comm.Get_rank()
-    minSize = nMP*nrnd
-    if size!=minSize:
-        raise ValueError('The number of processes must be %i'%minSize)
-    if n<0 or m<0:
-        raise ValueError('Introduce a valid number of model dimensions and data samples')
+   
+    #W = np.zeros((mdlsz))
 
-    if rank==0:
-        '''
-        #create model weights
-        #--------------------
-        '''
-        if mdlW=='Gaus':
-            mn =-4
-            mx = 4
-            W  = (mx-mn)*np.random.normal(size=(mdlsz,1))
-        elif mdlW=='Uni':
-            mn =-5
-            mx = 5
-            W  = mn+(mx-mn)*np.random.uniform(size=(mdlsz,1))
-        elif mdlW=='Lap':
-            mn = -2
-            mx = 2
-            W = np.exp(np.linspace(mn,mx,np.floor(mdlsz/2.)))
-            W = np.hstack((-1*W,W))[:,np.newaxis]
-        elif mdlW=='ExpI':
-            mn = -2
-            mx = 2
-            W  = np.exp(np.linspace(mn,mx,np.floor(mdlsz/2.)))
-            W1 = W-np.max(W)-.1*np.max(W)
-            W2 = np.abs(W-np.max(W)-.1*np.max(W))
-            W  = np.hstack((W1,W2))[:,np.newaxis]
-        elif mdlW=='Clst1':
-            mn = 5
-            mx = 30
-            lp = np.linspace(mn,mx,6)
-            for i in xrange(5):
-                lpW = lp[i]+np.random.uniform(size=(np.floor(mdlsz/5.),1))
+    '''
+     #create model weights
+     #--------------------
+    '''
+    if mdlW=='Gaus':
+    	mn =-4
+        mx = 4
+        W  = (mx-mn)*np.random.normal(size=(mdlsz,1))
+    elif mdlW=='Uni':
+        mn =-5
+        mx = 5
+        W  = mn+(mx-mn)*np.random.uniform(size=(mdlsz,1))
+    elif mdlW=='Lap':
+        mn = -2
+        mx = 2
+        W = np.exp(np.linspace(mn,mx,np.floor(mdlsz/2.)))
+        W = np.hstack((-1*W,W))[:,np.newaxis]
+    elif mdlW=='ExpI':
+        mn = -2
+        mx = 2
+        W  = np.exp(np.linspace(mn,mx,np.floor(mdlsz/2.)))
+        W1 = W-np.max(W)-.1*np.max(W)
+        W2 = np.abs(W-np.max(W)-.1*np.max(W))
+        W  = np.hstack((W1,W2))[:,np.newaxis]
+    elif mdlW=='Clst1':
+        mn = 5
+        mx = 30
+        lp = np.linspace(mn,mx,6)
+        for i in xrange(5):
+        	lpW = lp[i]+np.random.uniform(size=(np.floor(mdlsz/5.),1))
                 if i==0:
                     W = lpW
                 else:
                     W = np.vstack((W,lpW))
-        elif mdlW=='Clst2':
-            mn = 3
-            mx = 20
-            lp = np.linspace(mn,mx,6)
-            for i in xrange(5):
-                lpW = np.exp(np.linspace(lp[i],lp[i+1],np.floor(mdlsz/10.)))[:,np.newaxis]
+    elif mdlW=='Clst2':
+        mn = 3
+        mx = 20
+        lp = np.linspace(mn,mx,6)
+        for i in xrange(5):
+        	lpW = np.exp(np.linspace(lp[i],lp[i+1],np.floor(mdlsz/10.)))[:,np.newaxis]
                 if i==0:
                     W = np.vstack((-lpW,lpW))
                 else:
                     W = np.vstack((W,-lpW,lpW))
-        elif mdlW=='ID':
-            W = 10*np.ones(size=(mdlsz,1))
+    elif mdlW=='ID':
+        W = 10*np.ones(size=(mdlsz,1))
+
+    #comm.Bcast([W,MPI.DOUBLE])
 
         #total number of data samples
-        nd = v3*(mdlsz+mdlsz*v2)
-
-    comm.Barrier()
-    comm.Bcast(nd, MPI.INT)
-    comm.Bcast(W, MPI.DOUBLE)
+    nd = v3*(mdlsz+mdlsz*v2)
 
     '''
     #generate input data
     #-------------------
     '''
-    #data for non-null dimensions
-    #Dat     = 3*np.random.normal(size=(mdlsz,nd//size))
-    #data for null dimensions
-    #Dat2    = 3*np.random.normal(size=(1+round(v2*mdlsz),nd//size))
-    #design matrix // input data // non-null and null dimensions
-    #DDat    = np.vstack((Dat,Dat2)).T
+    	#data for non-null dimensions
+   	 #Dat     = 3*np.random.normal(size=(mdlsz,nd//size))
+	    #data for null dimensions
+	    #Dat2    = 3*np.random.normal(size=(1+round(v2*mdlsz),nd//size))
+	    #design matrix // input data // non-null and null dimensions
+	    #DDat    = np.vstack((Dat,Dat2)).T
+
+
+	#print '\n before h5py.File'
     
     colw=1 #default is collective write
-    name = '%s_%.1f_%i_%i'%(mdlW,v1,v2,v3)
-    f=h5py.File('%s/Model_Data_%s.h5'%(path,name),'w',driver='mpio',comm=MPI.COMM_WORLD)
+    	#name = '%s_%.1f_%i_%i'%(mdlW,v1,v2,v3)
+    	#f=h5py.File('%s/Model_Data_%s.h5'%(path,name),'w',driver='mpio',comm=MPI.COMM_WORLD)
 
-    length_x=nd
-    length_y=mdlsz
-    dset = f.create_dataset('X', (length_x,length_y), dtype=np.float64)
+	#print '\n finished h5py.file'
+		
+    length_x= int(nd)
+    length_y= int(1+round(v2*mdlsz)+mdlsz)
 
-    length_rank=length_x / nproc
-    length_last_rank=length_x -length_rank*(nproc-1)
-    comm.Barrier()
-    timestart=MPI.Wtime()
-    start=rank*length_rank
-    end=start+length_rank
-    if rank==nproc-1: #last rank
+    length_rank=length_x // size
+    length_last_rank=length_x -length_rank*(size-1)
+    start= int(rank*length_rank)
+    end= int(start+length_rank)
+    if rank==size-1: #last rank
         end=start+length_last_rank
 
-    Dat = 3*np.random.normal(size=(length_y, end-start))
+    Dat = 3*np.random.normal(size=(mdlsz, end-start))
 
-    Dat2 = 3*np.random.normal(size=(1+round(v2*mdlsz), end-start))
+    #print Dat.shape
 
+    Dat2 = 3*np.random.normal(size=(int(1+round(v2*mdlsz)), end-start))
+
+    #print Dat.shape
 
     DDat = np.vstack((Dat,Dat2)).T
 
+    #if rank==0:
+	#print DDat
 
+    #sys.exit()
+    #print '\n finished DDat cal'
+
+    name = '%s_%.1f_%i_%i'%(mdlW,v1,v2,v3)
+    f=h5py.File("%s/Model_Data_%s.h5"%(path,name),'w',driver='mpio',comm=MPI.COMM_WORLD)
+    #filename="parallel_test.hdf5"	
+    #f = h5py.File(filename, 'w', driver='mpio', comm=MPI.COMM_WORLD)
+    #print '\n finished h5py.file'
+    g = f.create_group('data')
+    dset = g.create_dataset('X', shape=(length_x, length_y), dtype=np.float64)
+    #print dset.shape
 
     if store:
         if saveAs=='hdf5':
-            if colw==1:
-                with dset.collective:
-                    dset[start:end,:] = DDat
-            else:
-                dset[start:end,:] = DDat
+            	if colw==1:
+                	with dset.collective:
+                    		dset[start:end,:] = DDat
+				#dset[:,start:end] = DDat
+				print '\n inside store of DDat'
+            	else:
+                	dset[start:end,:] = DDat
 
-            comm.Barrier()
-            timeend=MPI.Wtime()
-            if rank==0:
-                if colw==1:
-                print "collective write time %f" %(timeend-timestart)
-                print '\nData Model:' 
-                print '\t* No samples:\t%i'%DDat.shape[0]       #changed from covariates
-                print '\t* No covariates   :\t%i'%DDat.shape[1] #changed from samples
-                print 'Data stored in %s'%path
+            
+   
+    print '\nBefore tmp calculation'
+        #dim(Wact)<-mdlsz+mdlsz*v2+1
 
+    Wact = np.ones((length_y))
 
     if rank==0:
-        '''
-        #ground truth
-        #------------
-        '''
-        #dim(Wact)<-mdlsz+mdlsz*v2+1
-        tmp = np.zeros((1+round(v2*mdlsz),1))
-        Wact    = np.vstack((W,tmp))
-        
-        y = np.dot(W.T,Dat)+v1*np.sum(np.abs(W))*np.random.normal(size=nd)
-        y-=np.mean(y)
+    	tmp = np.zeros((1+round(v2*mdlsz),1))
+    	Wact    = np.vstack((W,tmp))
 
+    #if rank==0:
+	#print 'Wact shape'
+	#print Wact.shape
+ 
+    y = np.dot(W.T,Dat)+v1*np.sum(np.abs(W))*np.random.normal(size=end-start)
+    y-=np.mean(y)
+    #print y.shape
+    #sys.exit() 
 
-        if store:
-            if saveAs=='hdf5':
-                with f:
-                    g.create_dataset(name='y',data=np.ravel(y),dtype=np.float64,\
-                                    shape=np.ravel(y).shape,compression="gzip")
-                    g.create_dataset(name='Wact',data=Wact,dtype=np.float64,\
-                                    shape=Wact.shape,compression="gzip")
+    dset_y = g.create_dataset('y', shape=(length_x,1), dtype=np.float64)
+    #print dset_y.id
 
-        else:
-            return DDat,np.ravel(y),Wact
+    dset_W = g.create_dataset('Wact', shape=Wact.shape, dtype=np.float64)
+    
+    if store:
+      	if saveAs=='hdf5':
+		if colw==1:
+			with dset_y.collective:
+				dset_y[start:end,:] = y.T
+		if rank==0:
+			dset_W[:] = Wact
+    
+    print 'Finished Everything'            
 
     f.close()
 
-    MPI_Finalize()
+    MPI.Finalize()
+    print 'Finished Finalzing'
 
 if __name__=='__main__':
     main()
