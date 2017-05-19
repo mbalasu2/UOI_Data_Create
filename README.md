@@ -6,4 +6,4 @@ This folder has 2 files.
     --status=working
      
 3. Model_Data_Create_MPI_v2.py -- This uses collective i/o for storing data from https://github.com/valiantljk/h5py/blob/master/examples/collective_io.py page. This is supposed to be more efficient than the previous version of parallel data creation and more intuitive. Use this version to create data. 
-       --status=to_be_tested
+       --status=working
